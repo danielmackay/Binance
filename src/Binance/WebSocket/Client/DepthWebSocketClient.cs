@@ -32,8 +32,8 @@ namespace Binance.WebSocket
         /// Default constructor provides default <see cref="IDepthClient"/>
         /// and default <see cref="IBinanceWebSocketStreamPublisher"/>, but no logger.
         /// </summary>
-        public DepthWebSocketClient()
-            : this(new DepthClient(), new BinanceWebSocketStreamPublisher())
+        public DepthWebSocketClient(int updateSpeedMilliseconds = 1000)
+            : this(new DepthClient(null, updateSpeedMilliseconds), new BinanceWebSocketStreamPublisher())
         { }
 
         /// <summary>

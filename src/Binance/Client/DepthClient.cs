@@ -12,6 +12,11 @@ namespace Binance.Client
     /// </summary>
     public class DepthClient : JsonClient<DepthUpdateEventArgs>, IDepthClient
     {
+        /// <summary>
+        /// Milliseconds
+        /// </summary>
+        private readonly int updateSpeed;
+
         #region Public Events
 
         public event EventHandler<DepthUpdateEventArgs> DepthUpdate;
@@ -24,9 +29,11 @@ namespace Binance.Client
         /// Constructor.
         /// </summary>
         /// <param name="logger"></param>
-        public DepthClient(ILogger<DepthClient> logger = null)
+        public DepthClient(ILogger<DepthClient> logger = null, int updateSpeed = 1000)
             : base(logger)
-        { }
+        {
+            this.updateSpeed = updateSpeed;
+        }
 
         #endregion Construtors
 
@@ -38,11 +45,11 @@ namespace Binance.Client
         /// <param name="symbol"></param>
         /// <param name="limit"></param>
         /// <returns></returns>
-        public static string GetStreamName(string symbol, int limit = default)
+        public static string GetStreamName(string symbol, int limit = default, int updateSpeed = 1000)
         {
             Throw.IfNullOrWhiteSpace(symbol, nameof(symbol));
 
-            return limit > 0 ? $"{symbol.ToLowerInvariant()}@depth{limit}" : $"{symbol.ToLowerInvariant()}@depth";
+            return limit > 0 ? $"{symbol.ToLowerInvariant()}@depth{limit}@{updateSpeed}ms" : $"{symbol.ToLowerInvariant()}@depth@{updateSpeed}ms";
         }
 
         public virtual IDepthClient Subscribe(string symbol, int limit, Action<DepthUpdateEventArgs> callback)
@@ -53,7 +60,7 @@ namespace Binance.Client
 
             Logger?.LogDebug($"{nameof(DepthClient)}.{nameof(Subscribe)}: \"{symbol}\" \"{limit}\" (callback: {(callback == null ? "no" : "yes")}).  [thread: {Thread.CurrentThread.ManagedThreadId}]");
 
-            SubscribeStream(GetStreamName(symbol, limit), callback);
+            SubscribeStream(GetStreamName(symbol, limit, updateSpeed), callback);
 
             return this;
         }
@@ -66,7 +73,7 @@ namespace Binance.Client
 
             Logger?.LogDebug($"{nameof(DepthClient)}.{nameof(Unsubscribe)}: \"{symbol}\" \"{limit}\" (callback: {(callback == null ? "no" : "yes")}).  [thread: {Thread.CurrentThread.ManagedThreadId}]");
 
-            UnsubscribeStream(GetStreamName(symbol, limit), callback);
+            UnsubscribeStream(GetStreamName(symbol, limit, updateSpeed), callback);
 
             return this;
         }
